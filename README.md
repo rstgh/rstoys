@@ -14,7 +14,7 @@ pip install rstoys
 realtime module provides some functions related to realtime main loop processing functionality.
 All time or interval values are expressed in `seconds`.
 
-### `realtime.loop(callback, update_interval = 0.020)`
+### `realtime.loop(callback, update_interval=0.020)`
 
 this function enters an infinite loop calling your `callback` function with two parameters `(elapsed_time, delta_time)` at specified update_interval.
 
@@ -24,7 +24,7 @@ this function enters an infinite loop calling your `callback` function with two 
 It is an equivalent of:
 ```python
 while True:
-    callback(elapsedTime, deltaTime)
+    callback(elapsed_time, delta_time)
     sleep(updateInterval)
 ```
 Using the realtime.loop() has an advantage that it dynamically adjusts the sleep time to compensate for the time spent in your callback, trying to provide as stable `callback` calling interval as possible.
@@ -35,12 +35,12 @@ Example usage:
 ```python
 from rstoys import realtime
 
-def update(elapsedTime, deltaTime):
-    print("elapsed=%08.3fs | dt=%06.3fms" % (elapsedTime, deltaTime * 1000))
+def update(elapsed_time, delta_time):
+    print("elapsed=%08.3fs | dt=%06.3fms" % (elapsed_time, delta_time * 1000))
 
 # initialize my hardware here
 
-# enter endless loop that calls our update function every 100ms
+# enter the loop that calls update function every 100ms
 realtime.loop(update, 0.1)
 ```
 
@@ -66,9 +66,9 @@ Example code:
 from rstoys import touchy
 from rstoys import realtime
 
-def update(elapsed, dt):
+def update(elapsed_time, delta_time):
     (x, y) = touchy.controller.getStick()
-    print("elapsed=%08.3fs | dt=%06.3fms | X=%6.3f | Y=%6.3f" % (elapsed, dt * 1000, x, y))
+    print("elapsed=%08.3fs | dt=%06.3fms | X=%6.3f | Y=%6.3f" % (elapsed_time, delta_time * 1000, x, y))
 
 touchy.start_server(port=5000)
 realtime.loop(update)
