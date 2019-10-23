@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Touchy</title>
+
+<style>
+
+    body {
+        font-family: "Courier New"; font-size: 16px;
+    }
+
+    #joy {
+        margin: 30px auto;
+        width: 300px;
+        height: 300px;
+        border-radius: 22px;
+        background-color: #f0fff0;
+        border: 2px solid #c0ffc0;
+        position: relative;
+        cursor: pointer;
+        background-image: url('/static/stick-back.png');
+        box-shadow: 1px 1px 8px rgba(0,0,0,0.4);
+
+        -webkit-user-select: none; /* Safari 3.1+ */
+        -moz-user-select: none; /* Firefox 2+ */
+        -ms-user-select: none; /* IE 10+ */
+        user-select: none; /* Standard syntax */
+    }
+
+    #joy > .dot {
+        position: absolute;
+        left: -1000px;
+        top: -1000px;
+        display: inline-block;
+        background-color: #ffa080;
+        border: 1px solid rgba(0,0,0,0.4);
+        width: 60px;
+        height: 60px;
+        border-radius: 60px;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    }
+
+    #joy > svg { position: absolute; }
+    
+    #info {
+        text-align: center;
+    }
+
+</style>
+
+</head>
+
+
+<body>
+
+    <div style="height:10px;"></div>
+
+    <div id="joy">
+
+        <svg height="300" width="300">
+            <line id="line" x1="150" y1="150" x2="150" y2="150" style="stroke:rgba(200,80,80,0.4);stroke-width:50; stroke-linecap:round;"></line>
+            <line x1="150" y1="150" x2="150" y2="150" style="stroke:rgba(0,0,0,0.2);stroke-width:60; stroke-linecap:round;"></line>
+        </svg>
+
+        <div class="dot" style="left: 119px; top: 119px; box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 8px;">
+
+    </div></div>
+
+
+    <div id="info">x = 0.00, y = 0.00</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script>
+
+        var displayUpdateInterval = {{display_update_interval}};
+        var ajaxUpdateInterval = {{ajax_update_interval}};
+
+        function joy(id, cb)
+        {
+            var joy = $('#' + id);
+            var dot = $('#' + id + ' > .dot');
+
+            var jw = joy.innerWidth();
+            var jh = joy.innerHeight();
+
+            var dw = dot.outerWidth();
+            var dh = dot.outerHeight();
+
+            joy._lx = 0;
+            joy._ly = 0;
+
+            var moveStick = function(dx, dy) {
+
+                var px = (jw) * (0.5 + dx / 2.0) - dw / 2;
+                var py = (jh) * (0.5 - dy / 2.0) - dh / 2;
+                dot.css({left: px + 'px', top: py + 'px'});
+
+                $('#line').attr('x2', jw * (0.5 + dx / 2));
+                $('#line').attr('y2', jh * (0.5 - dy / 2));
+
+                var sdx = dx * 20;
+                var sdy = -dy * 20;
+                var swi = 8 + Math.sqrt(dx*dx+dy*dy) * 20;
+                dot.css('box-shadow', sdx + 'px ' + sdy + 'px ' + swi + 'px rgba(0,0,0,0.8)');
+
+                joy._lx = dx;
+                joy._ly = dy;
+
+                cb({x:dx, y:dy});
+            };
+
+            var pointerDown = function () {
+                joy._down = true;
+            };
+
+            var pointerUp = function () {
+                joy._down = false;
+            };
+
+            var pointerMove = function (x,y) {
+                if (!joy._down) return;
+
+                var nx = Math.min(1, Math.max(-1, (x / joy.outerWidth()) * 2 - 1));
+                var ny = Math.min(1, Math.max(-1, 1 - (y / joy.outerHeight()) * 2));
+
+                joy._x = nx;
+                joy._y = ny;
+            };
+
+            joy.mousedown(function (e) {
+                var o = joy.offset();
+                var x = e.pageX - o.left;
+                var y = e.pageY - o.top;
+                pointerDown();
+                pointerMove(x,y);
+            });
+
+            joy.mousemove(function (e) {
+                var o = joy.offset();
+                var x = e.pageX - o.left;
+                var y = e.pageY - o.top;
+                pointerMove(x,y);
+            });
+
+            joy.on('touchstart', function(e) {
+                e.preventDefault();
+                pointerDown();
+                var t = e.touches[0];
+                if (t) {
+                    var o = joy.offset();
+                    var x = t.pageX - o.left;
+                    var y = t.pageY - o.top;
+                    pointerMove(x,y);
+                }
+
+            });
+
+            joy.on('touchend', function(e) {
+                e.preventDefault();
+                pointerUp();
+            });
+
+
+            joy.on('touchmove', function(e) {
+                e.preventDefault();
+                var t = e.touches[0];
+                if (t) {
+                    var o = joy.offset();
+                    var x = t.pageX - o.left;
+                    var y = t.pageY - o.top;
+                    pointerMove(x,y);
+                }
+            });
+
+            joy.mouseup(function (e) {
+                pointerUp();
+            });
+
+            var oldhash = null;
+
+            setInterval(function(){
+
+                var px = 0;
+                var py = 0;
+
+                if (joy._down)
+                {
+                    px = joy._x;
+                    py = joy._y;
+                }
+
+                px = joy._lx * 0.8 + px * 0.2;
+                py = joy._ly * 0.8 + py * 0.2;
+
+                // used to stop updating if not required
+                newhash = parseFloat(px).toFixed(4) + '|' + parseFloat(py).toFixed(4)
+
+                if (newhash !== oldhash)
+                {
+                    moveStick(px, py);
+                    oldhash = newhash;
+                }
+
+            }, 20);
+
+            moveStick(0,0);
+        }
+
+        $(function(){
+
+            var send = false;
+            var data = { x: 0, y: 0 }
+
+            joy('joy', function(stick)
+            {
+
+                data.x = stick.x;
+                data.y = stick.y;
+                send = true;
+
+                var info = 'X=' + parseFloat(stick.x).toFixed(3) + ' Y=' + parseFloat(stick.y).toFixed(3);
+                $('#info').text(info);
+
+            });
+
+            var dynamicInterval = null;
+
+            intervalFunction = function()
+            {
+                    var after = function()
+                    {
+                        dynamicInterval(ajaxUpdateInterval);
+                    };
+
+                    if (send)
+                    {
+                        send = false;
+                        $.ajax({ url: '/api', data: data, success: after, error: after });
+                    }
+                    else
+                    {
+                        dynamicInterval(ajaxUpdateInterval / 2);
+                    }
+            };
+
+            dynamicInterval = function(interval)
+            {
+                setTimeout(intervalFunction, interval);
+            }
+
+            dynamicInterval(ajaxUpdateInterval);
+
+        });
+
+    </script>
+
+</body>
+</html>
