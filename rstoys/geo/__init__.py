@@ -70,6 +70,23 @@ def xy_to_bearing(x, y):
     return b
 
 
+def normalize_bearing(b):
+    """ normalizes bearing into [0...360) range, so -1 becomes 359 and 721 will return 1 """
+    while b < 0:
+        b = b + 360.0
+    while b >= 360.0:
+        b = b - 360.0
+    return b
+
+
+def diff_bearing(b1, b2):
+    """ calculate bearing difference between b2 and b1, returns angle difference in range (-179 ... 180] """
+    d = normalize_bearing(b2) - normalize_bearing(b1)
+    d = d + 360.0 if d <= -180.0 else d
+    d = d - 360.0 if d > 180.0 else d
+    return d
+
+
 def average_bearing(bearings):
     """
     calculate an average bearing from a list of bearing readouts

@@ -20,12 +20,10 @@ print("")
 
 print("Bearing from MUC to LCY airports: %.6f deg" % (p.bearing(48.353889, 11.786111, 51.505278, 0.055278)))
 print("Bearing from LCY to MUC airports: %.6f deg" % (p.bearing(51.505278, 0.055278, 48.353889, 11.786111)))
-print("")
-
 print("Bearing from MUC to WRO airports: %.6f deg" % (p.bearing(48.353889, 11.786111, 51.109444, 16.880278)))
 print("Bearing from WRO to MUC airports: %.6f deg" % (p.bearing(51.109444, 16.880278, 48.353889, 11.786111)))
-print("")
 
+print("")
 
 be = BearingEstimator(2)
 
@@ -37,3 +35,18 @@ print("Bearing after 2:london: " + str(be.get_bearing()))
 
 be.add_location(alaska)
 print("Bearing after 3:alaska: " + str(be.get_bearing()))
+
+print("")
+
+def test_diff_bearing(b1, b2):
+    print("diff_bearing(%8.3f, %8.3f) => %8.3f" % (b1, b2, diff_bearing(b1, b2)))
+
+test_diff_bearing(0, 0)
+test_diff_bearing(0, -1)
+test_diff_bearing(45, 90)
+test_diff_bearing(0, 180)
+test_diff_bearing(0, 181)
+test_diff_bearing(350, 10)
+test_diff_bearing(0, 721)
+
+print("")
