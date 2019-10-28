@@ -1,6 +1,6 @@
 # rstoys
 
-Cross platform python lightweight library to help creating interactive real-time, remote controlled toys (typically based on Raspberry Pi). Library provides set of independent reusable modules described below.
+Cross platform lightweight python library to help creating interactive real-time, remote controlled toys (typically based on Raspberry Pi). Library provides set of independent reusable modules described below.
 
 Source code can be found at [https://github.com/rstgh/rstoys](https://github.com/rstgh/rstoys)
 
@@ -25,7 +25,7 @@ It is an equivalent of:
 ```python
 while True:
     callback(elapsed_time, delta_time)
-    sleep(updateInterval)
+    sleep(update_interval)
 ```
 Using the realtime.loop() has an advantage that it dynamically adjusts the sleep time to compensate for the time spent in your callback, trying to provide as stable `callback` calling interval as possible.
 
@@ -75,6 +75,22 @@ realtime.loop(update)
 touchy.stop_server()
 ```
 ... then open `http://<YOUR-IP-ADDRESS>:5000/` in your mobile browser and move the on-screen stick to see the changes.
+
+## rstoys.geo
+
+this module provides simple geo location related functionality to help building location aware navigation based on bearing adjustments. It properly calculates absolute bearing between two geo locations, provides correct `average_bearing()` method as well as simple `WebMercatorProjection` implementation. 
+
+Please check out [example-geo.py](https://github.com/rstgh/rstoys/blob/master/example-geo.py) file for more usage examples.  
+
+### `geo.LatLon(lat, lon)`
+
+geo location point with latitude and longitude
+
+```python
+munich = geo.LatLon(48.133333, 11.566667)
+# accepts also lat lon as string comma separated
+munich = geo.LatLon('48.133333,11.566667')
+```
 
 ### Development
 
