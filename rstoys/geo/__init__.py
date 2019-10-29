@@ -163,4 +163,60 @@ class BearingEstimator(object):
         return average_bearing(bearings)
 
 
+class WayPoints(object):
+
+    def __init__(self, completion_radius=20):
+        self.radius = completion_radius
+        self.points = []
+
+    def append(self, waypoint):
+        """ append new waypoint to the list """
+        self.points.append([waypoint, False])
+
+    def completed(self):
+        """ returns True if all waypoints have been completed """
+        for e in self.points:
+            if not e[1]:
+                return False
+        return True
+
+    def clear(self):
+        """ clears all the waypoints """
+        self.points = []
+
+    def reset(self):
+        """ sets the state of all waypoints to not-completed """
+        for e in self.points:
+            e[1] = False
+
+    def target(self, location):
+        """ returns next waypoint (target) to follow and checks if it was reached """
+        while not self.completed():
+
+            e = None
+            for e in self.points:
+                if not e[1]:
+                    break
+            if e is None:
+                return None
+
+            # check if current target is completed
+            if location.distance(e[0]) <= self.radius:
+                e[1] = True  # mark as completed
+            else:
+                return e[0]
+
+        return None
+
+    def progress(self):
+        """ simpliest completion progress, todo: use distance for beter estimation """
+        n = len(self.points)
+        c = 0
+        for e in self.points:
+            if e[1]:
+                c = c + 1
+
+        return float(c * 100.0) / float(max(1, n))
+
+
 bearing_projection = WebMercatorProjection(10)

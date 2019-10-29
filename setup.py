@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md')) as f:
 
 setuptools.setup(
     name='rstoys',
-    version='1.1.1',
+    version='1.1.2',
     description='Library for simple real-time control of robotic toys.',
     long_description=long_description,
     long_description_content_type='text/markdown',
