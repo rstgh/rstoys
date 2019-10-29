@@ -18,7 +18,7 @@ path.append(LatLon(50.608348, -1.954082))
 # assume we start near the beginning of the path
 location = LatLon(50.6, -1.9)
 
-estimator = BearingEstimator(2)
+estimator = BearingEstimator(5)
 
 while not path.completed():
 
@@ -40,7 +40,7 @@ while not path.completed():
             % (location, target, target_bearing, course_bearing, error_bearing, path.progress())
         )
 
-    # assume we a fraction towards target
+    # assume we move a fraction towards the target
     fraction = 0.3
     lat = location.lat * (1-fraction) + target.lat * fraction
     lon = location.lon * (1-fraction) + target.lon * fraction
