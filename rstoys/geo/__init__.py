@@ -38,6 +38,18 @@ class LatLon(object):
 
         return 6373000.0 * c
 
+    def move(self, heading, distance):
+
+
+        latdeg = 111320  # meters per lat degree
+        londeg = math.cos(math.radians(self.lat)) * 111320 #  ~60000 todo: meters per lon degree at this lat
+
+        r = math.radians(heading)
+        self.lat = self.lat + math.cos(r) * distance / latdeg
+        self.lon = self.lon + math.sin(r) * distance / londeg
+
+        return self
+
 
 class WebMercatorProjection:
 
@@ -68,8 +80,10 @@ def xy_to_bearing(x, y):
     converts coordinates x, y into absolute bearing in range [0, 360)
     for example (x=0, y=1) => 0, (x=1, y=0) => 90, (x=0, y=-1) => 180, (x=-1, y=0) => 270
     """
-    if x == 0 and y == 0:
+    print("xy_to_bearing", x, y)
+    if x == 0.0 and y == 0.0:
         return None
+
     b = math.degrees(math.atan2(x, y))
     b = b if b >= 0.0 else b + 360.0
     b = b if b < 360.0 else b - 360.0
@@ -122,7 +136,7 @@ def average_bearing(bearings):
         ax = sum(xs) / len(xs)
         ay = sum(ys) / len(ys)
 
-        if (round(ax, 6) != 0.0) or (round(ay, 6) != 0.0):
+        if (round(ax, 8) != 0.0) or (round(ay, 8) != 0.0):
             return xy_to_bearing(ax, ay)
 
 
@@ -134,7 +148,7 @@ class BearingEstimator(object):
         self.locations = []
 
     def __str__(self):
-        return "Bearing %.1f deg" % (self.get_bearing()) if len(self.locations) > 1 else "Bearing Unknown"
+        return "Bearing %.1f deg" % (self.get_bearing()) if len(self.locations) > 1 else "Bearing None"
 
     def clear(self):
         self.locations = []
