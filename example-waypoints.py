@@ -1,6 +1,6 @@
 
 from rstoys.geo import LatLon
-from rstoys.geo import BearingEstimator
+from rstoys.geo import CourseManager
 from rstoys.geo import diff_bearing
 from rstoys.geo import WayPoints
 
@@ -18,7 +18,7 @@ path.append(LatLon(50.608348, -1.954082))
 # assume we start near the beginning of the path
 location = LatLon(50.6, -1.9)
 
-estimator = BearingEstimator(5)
+estimator = CourseManager(5)
 
 while not path.completed():
 

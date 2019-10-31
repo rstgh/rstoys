@@ -1,6 +1,7 @@
 
 import time
 import signal
+import logging
 
 name = "realtime"
 
@@ -37,7 +38,12 @@ def loop(control, update_interval=0.02):
         dt = ct - lt  # real delta time
         lt = ct
 
-        control(elapsed, dt)
+        try:
+            control(elapsed, dt)
+        except Exception as ex:
+            logging.error(ex)
+        except:
+            logging.error("Fatal exception in render()")
 
         # calculate extra required sleep time
         # compensating for control routine duration

@@ -10,6 +10,8 @@ import arcade
 
 from ..geo import *
 
+name = "maps"
+
 
 class LocalFileCache(object):
     cache_dir = tempfile.gettempdir()
@@ -48,7 +50,8 @@ class SimpleArcade(object):
             self.render(elapsed_time, delta_time)
         except Exception as ex:
             logging.error(ex)
-
+        except:
+            logging.error("Fatal exception in render()")
 
     def render(self, elapsed_time, delta_time):
         pass
@@ -76,6 +79,23 @@ class MapLayer(object):
     def preload(self):
         pass
 
+    def draw_circle_outline(self, latlon, radius, color=(128,128,128), width=1):
+        x, y = self.map.project(latlon)
+        rx, ry = self.map.project_radius(latlon, radius)
+        arcade.draw_ellipse_outline(x, y, rx, ry, color, width)
+
+    def draw_circle_filled(self, latlon, radius, color=(128,128,128)):
+        x, y = self.map.project(latlon)
+        rx, ry = self.map.project_radius(latlon, radius)
+        arcade.draw_ellipse_filled(x, y, rx, ry, color, 0, 36)
+
+    def load_texture(self, filename):
+        return arcade.load_texture(filename)
+
+    def draw_texture(self, texture, latlon, rotation = 0, scale = 1):
+        x, y = self.map.project(latlon)
+        arcade.draw_texture_rectangle(x, y, texture.width * scale, texture.height * scale, texture, rotation)
+
 
 class MapMarkerLayer(MapLayer):
 
@@ -94,8 +114,8 @@ class MapMarkerLayer(MapLayer):
             bounce = 10 + 20 * abs(math.sin(et * 2 + n / 4))
 
             arcade.draw_line(x, y, x, y + bounce, (0, 0, 0, 64), 4)
-            arcade.draw_circle_filled(x, y, 4, (0,0,0,128), 32)
-            arcade.draw_circle_filled(x, y + bounce, 8, arcade.color.AMAZON, 32)
+            arcade.draw_circle_filled(x, y, 4, (0,0,0,128), 18)
+            arcade.draw_circle_filled(x, y + bounce, 8, arcade.color.AMAZON, 18)
 
             n = n + 1
 
@@ -119,10 +139,11 @@ class MapWayPointsLayer(MapLayer):
             completed = e[1]
 
             if completed:
-                arcade.draw_circle_filled(x, y, 6, (192, 64, 0, 64), 32)
+                self.draw_circle_outline(e[0], self.waypoints.radius, (0,0,0, 16))
+                arcade.draw_circle_filled(x, y, 4, (192, 64, 0), 18)
             else:
-                arcade.draw_circle_filled(x, y, 32, (0,0,0, 16), 32)
-                arcade.draw_circle_filled(x, y, 8, (0,0,0, 128), 32)
+                self.draw_circle_filled(e[0], self.waypoints.radius, (0,0,0, 16))
+                arcade.draw_circle_filled(x, y, 4, (0,60,90), 18)
 
 
 class MapTileLayer(MapLayer):
@@ -173,7 +194,10 @@ class MapTileLayer(MapLayer):
 
         for ny in range(0 - oy, 1 + oy):
             for nx in range(0 - ox, 1 + ox):
-                yield self.map.zoom, cnx + nx, cny + ny, x0 + (nx * 256.0), y0 - (ny * 256.0)
+                tx = x0 + (nx * 256.0)
+                ty = y0 - (ny * 256.0)
+                if tx+128 > 0 and ty+128 > 0 and tx-128 < self.map.width and ty-128 < self.map.height:
+                    yield self.map.zoom, cnx + nx, cny + ny, tx, ty
 
     def preload(self):
         for e in self.iterate():
@@ -252,6 +276,7 @@ class Map(SimpleArcade):
     def add_layer(self, layer):
         layer.map = self
         self.layers.append(layer)
+        return self
 
     def preload(self):
         for layer in self.layers:
@@ -264,6 +289,16 @@ class Map(SimpleArcade):
     def project(self, latlon):
         (x, y) = self.projection.project(latlon)
         return self.wh + x - self.center_x, self.hh - (y - self.center_y)
+
+    def project_radius(self, latlon, meters):
+
+        x1, y1 = self.project(latlon)
+
+        p = LatLon(latlon.lat, latlon.lon)
+        p = p.move(45, meters * 1.41421356237)
+        x2, y2 = self.project(p)
+
+        return abs(x2-x1), abs(y2-y1)
 
 
 standard_tile_layer = MapTileLayer('standard', 'https://a.tile.openstreetmap.org/${z}/${x}/${y}.png', 0, 19)

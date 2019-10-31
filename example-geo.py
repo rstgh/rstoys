@@ -1,7 +1,7 @@
 
 from rstoys.geo import LatLon
 from rstoys.geo import WebMercatorProjection
-from rstoys.geo import BearingEstimator
+from rstoys.geo import CourseManager
 
 from rstoys.geo import diff_bearing
 
@@ -38,7 +38,7 @@ print("Distance MUC-WRO is %.1f meters" % (muc.distance(wro)))
 
 print("")
 
-be = BearingEstimator(3)
+be = CourseManager(3)
 
 be.add_location(munich)
 print("Bearing after 1:munich: " + str(be.get_bearing()))

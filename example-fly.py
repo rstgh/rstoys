@@ -1,6 +1,6 @@
 
 from rstoys.geo import LatLon
-from rstoys.geo import BearingEstimator
+from rstoys.geo import CourseManager
 from rstoys.geo import diff_bearing
 
 muc = LatLon(48.353889, 11.786111)
@@ -12,7 +12,7 @@ print("Absolute bearing from MUC to LCY airport: %.1f deg" % (muc.bearing(lcy)))
 # our target is LCY airport
 target = lcy
 
-estimator = BearingEstimator(2)
+estimator = CourseManager(2)
 
 # we started in muc airport
 estimator.add_location(muc)

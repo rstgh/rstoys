@@ -22,6 +22,9 @@ class LatLon(object):
     def __str__(self):
         return "%.7f,%.7f" % (self.lat, self.lon)
 
+    def copy(self):
+        return LatLon(self.lat, self.lon)
+
     def bearing(self, latlon):
         return bearing(self, latlon)
 
@@ -40,9 +43,8 @@ class LatLon(object):
 
     def move(self, heading, distance):
 
-
         latdeg = 111320  # meters per lat degree
-        londeg = math.cos(math.radians(self.lat)) * 111320 #  ~60000 todo: meters per lon degree at this lat
+        londeg = math.cos(math.radians(self.lat)) * 111320
 
         r = math.radians(heading)
         self.lat = self.lat + math.cos(r) * distance / latdeg
@@ -139,7 +141,7 @@ def average_bearing(bearings):
             return xy_to_bearing(ax, ay)
 
 
-class BearingEstimator(object):
+class CourseManager(object):
 
     def __init__(self, max_samples=10, max_interval=10):
         self.max_samples = max(2, max_samples)
@@ -230,6 +232,30 @@ class WayPoints(object):
                 c = c + 1
 
         return float(c * 100.0) / float(max(1, n))
+
+
+class WayPointsBearingTracker(object):
+
+    def __init__(self, waypoints, samples=2):
+        self.path = waypoints
+        self.manager = CourseManager(samples) # course manager averaging 2 last location samples
+
+    def get_bearing_error(self, location):
+
+        location = location.copy()
+
+        self.manager.add_location(location)
+
+        if not self.path.completed():
+
+            target = self.path.target(location)
+            if target is not None:
+
+                target_bearing = location.bearing(target)
+                course_bearing = self.manager.get_bearing()
+
+                if course_bearing is not None and target_bearing is not None:
+                    return diff_bearing(course_bearing, target_bearing)
 
 
 bearing_projection = WebMercatorProjection(10)
