@@ -61,6 +61,11 @@ class Boat(MapLayer):
         if error is not None:
             self.rudder = max(-30, min(30, error))
 
+        if self.tracker.path.completed():
+            self.rudder = 0
+            self.speed = 0
+            print("Completed the path...")
+
 
 swanage = LatLon(50.607915, -1.950507)
 
