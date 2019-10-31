@@ -12,14 +12,30 @@ class Boat(MapLayer):
         self.position = position.copy()
         self.heading = heading
         self.speed = speed
-
         self.rudder = 0
-
         self.texture = self.load_texture("assets/boat-64.png")
+
+    def render(self, et, dt):
+
+        # draw the boat texture
+        self.draw_texture(self.texture, self.position, -self.heading)
+
+        # simulate boat physics
+        r = math.radians(self.rudder)
+        df = math.cos(r)
+        hf = math.sin(r)
+        self.position.move(self.heading, df * dt * 0.277778 * self.speed)
+        self.heading = self.heading + hf * dt * self.speed / 2
+
+
+class TrackingBoat(Boat):
+
+    def __init__(self, position=LatLon(0,0), heading=0, speed=0):
+
+        super().__init__(position, heading, speed)
 
         self.t = 0
         self.trail = []
-
         self.tracker = WayPointsBearingTracker(path, 2)
 
 
@@ -33,15 +49,7 @@ class Boat(MapLayer):
         s = "%s | R=%.1f°" % (str(self.position), self.rudder)
         arcade.draw_text(s, self.map.wh - 40, self.map.hh, (0,0,0,192), 18)
 
-        # draw the boat
-        self.draw_texture(self.texture, self.position, -self.heading)
-
-        # simulate boat physics
-        r = math.radians(self.rudder)
-        df = math.cos(r)
-        hf = math.sin(r)
-        self.position.move(self.heading, df * dt * 0.277778 * self.speed)
-        self.heading = self.heading + hf * dt * self.speed / 2
+        super().render(et, dt)
 
         # execute control every interval time
         interval = 0.3
@@ -78,7 +86,7 @@ path.append(LatLon(50.614055, -1.954800))
 path.append(LatLon(50.608348, -1.954082))
 
 
-boat = Boat(swanage, 45, 160) # boat at swanage, initially with 45 heading, and speed 160 km/h
+boat = TrackingBoat(swanage, 45, 160) # boat at swanage, initially with 45 heading, and speed 160 km/h
 
 map = Map(1400, 800)
 
@@ -96,5 +104,16 @@ map.add_layer(wikimedia_tile_layer)
 map.add_layer(markers)
 map.add_layer(MapWayPointsLayer(path))
 map.add_layer(boat)
+
+
+# five extra funny constant speed boats running in circles
+c = map.center.copy().move(70, 700) # c is 700 meters at 70 deg from map center
+n = 5
+for i in range(0, n):
+    a = 360 * i / n
+    b = Boat(c.copy().move(a, 150), a, 100)
+    b.rudder = 20
+    map.add_layer(b)
+
 
 map.run()
