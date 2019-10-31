@@ -26,7 +26,7 @@ class Boat(MapLayer):
         self.heading = 45
 
         self.rudder = 0
-        self.speed = 250
+        self.speed = 150
 
         self.texture = arcade.load_texture("assets/boat-64.png")
         self.t = 0
@@ -78,8 +78,6 @@ class Boat(MapLayer):
 
         target_bearing = location.bearing(target)
         course_bearing = estimator.get_bearing()
-
-        print(target_bearing, course_bearing)
 
         if course_bearing is None or target_bearing is None:
             return

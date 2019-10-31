@@ -80,7 +80,6 @@ def xy_to_bearing(x, y):
     converts coordinates x, y into absolute bearing in range [0, 360)
     for example (x=0, y=1) => 0, (x=1, y=0) => 90, (x=0, y=-1) => 180, (x=-1, y=0) => 270
     """
-    print("xy_to_bearing", x, y)
     if x == 0.0 and y == 0.0:
         return None
 
