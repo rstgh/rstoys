@@ -6,11 +6,20 @@ import tempfile
 import urllib.request
 import logging
 
-import arcade
-
 from ..geo import *
 
 name = "maps"
+
+try:
+    import arcade
+except Exception as e:
+    print("")
+    print("rstoys.maps module depends on 'arcade' module for windowed rendering")
+    print("http://arcade.academy/")
+    print("")
+    print("please install first: pip install arcade")
+    print("")
+    raise e
 
 
 class LocalFileCache(object):

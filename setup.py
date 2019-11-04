@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md')) as f:
 
 setuptools.setup(
     name='rstoys',
-    version='1.1.2',
+    version='1.1.3',
     description='Library for simple real-time control of robotic toys.',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -20,7 +20,4 @@ setuptools.setup(
     license='MIT',
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=[
-        'flask',
-    ],
     zip_safe=False)

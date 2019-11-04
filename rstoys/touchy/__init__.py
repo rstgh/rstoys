@@ -9,7 +9,16 @@ try:
 except ImportError:
     import urllib as urlrequest
 
-from flask import Flask, request, render_template, Response
+try:
+    from flask import Flask, request, render_template, Response
+except Exception as e:
+    print("")
+    print("rstoys.touchy module depends on 'flask' module to provide basic webserver")
+    print("https://www.fullstackpython.com/flask.html")
+    print("")
+    print("please install first: pip install flask")
+    print("")
+    raise e
 
 name = "touchy"
 
