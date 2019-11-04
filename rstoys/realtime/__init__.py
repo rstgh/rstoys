@@ -149,3 +149,26 @@ class Mapper(object):
         v = abs(self.v)
         self.v = 0.0 if v <= g else s*(v-g)/(m-g)
         return self
+
+
+class Interval(object):
+
+    def __init__(self, interval=1):
+        self.interval = interval
+        self.passed = 0
+
+    def should(self, dt):
+        self.passed = self.passed + dt
+        run = False
+        if self.passed >= self.interval:
+            run = True
+            self.passed = 0
+        return run
+
+
+def square_period(elapsed, period=1.0):
+    return int(math.floor(elapsed / (period/2.0))) % 2
+
+
+def sinus_period(elapsed, period=1.0):
+    return math.sin(elapsed * math.pi * 2.0 / period)

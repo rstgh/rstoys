@@ -1,6 +1,7 @@
 
 from rstoys.geo import *
 from rstoys.maps import *
+from rstoys.realtime import Interval
 
 
 class Boat(MapLayer):
@@ -34,7 +35,8 @@ class TrackingBoat(Boat):
 
         super().__init__(position, heading, speed)
 
-        self.t = 0
+        self.update_interval = Interval(0.3)
+
         self.trail = []
         self.tracker = WayPointsBearingTracker(path, 2)
 
@@ -52,10 +54,7 @@ class TrackingBoat(Boat):
         super().render(et, dt)
 
         # execute control every interval time
-        interval = 0.3
-        self.t = self.t + dt
-        if self.t > interval:
-            self.t = 0
+        if self.update_interval.should(dt):
             self.control()
 
 
@@ -63,6 +62,8 @@ class TrackingBoat(Boat):
 
         # append a trailing dot
         self.trail.append(self.position.copy())
+        while len(self.trail) > 30:
+            del self.trail[0]
 
         # calculate bearing error and steer the rudder
         error = self.tracker.get_bearing_error(self.position)
