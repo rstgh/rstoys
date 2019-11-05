@@ -111,22 +111,24 @@ class MapMarkerLayer(MapLayer):
     def __init__(self):
         super().__init__()
         self.markers = []
+        self.shapes = None
 
     def add_marker(self, latlon):
-        self.markers.append([latlon])
+        self.markers.append([latlon.copy()])
 
     def render(self, et, dt):
-        n = 0
-        for m in self.markers:
-            (x, y) = self.map.project(m[0])
 
-            bounce = 10 + 20 * abs(math.sin(et * 2 + n / 4))
+        if self.shapes is None:
 
-            arcade.draw_line(x, y, x, y + bounce, (0, 0, 0, 64), 4)
-            arcade.draw_circle_filled(x, y, 4, (0,0,0,128), 18)
-            arcade.draw_circle_filled(x, y + bounce, 8, arcade.color.AMAZON, 18)
+            self.shapes = arcade.ShapeElementList()
 
-            n = n + 1
+            for m in self.markers:
+                (x, y) = self.map.project(m[0])
+                self.shapes.append(arcade.create_line(x, y, x, y + 24, (0, 0, 0, 128), 4))
+                self.shapes.append(arcade.create_ellipse_filled(x, y, 4, 4, (0,0,0,128), 0, 18))
+                self.shapes.append(arcade.create_ellipse_filled(x, y + 24, 8, 8, arcade.color.AMAZON, 0, 18))
+
+        self.shapes.draw()
 
 
 class MapWayPointsLayer(MapLayer):
@@ -134,25 +136,24 @@ class MapWayPointsLayer(MapLayer):
     def __init__(self, waypoints):
         super().__init__()
         self.waypoints = waypoints
+        self.shapes = None
 
     def render(self, et, dt):
 
-        segments = []
-        for e in self.waypoints.points:
-            segments.append(self.map.project(e[0]))
+        if self.shapes is None:
 
-        arcade.draw_line_strip(segments, (0,40,150, 64), 3)
+            self.shapes = arcade.ShapeElementList()
+            l = None
+            for e in self.waypoints.points:
+                n = self.map.project(e[0])
+                if l is not None:
+                    self.shapes.append(arcade.create_line_strip((l, n), (0,40,150, 64), 3))
+                rx,ry = self.map.project_radius(e[0], self.waypoints.radius)
+                self.shapes.append(arcade.create_ellipse_filled(*n, rx, ry, (0, 40, 150, 32), 0, 18))
+                self.shapes.append(arcade.create_ellipse_filled(*n, 5, 5, (0, 40, 150, 128), 0, 9))
+                l = n
 
-        for e in self.waypoints.points:
-            (x, y) = self.map.project(e[0])
-            completed = e[1]
-
-            if completed:
-                self.draw_circle_outline(e[0], self.waypoints.radius, (0,0,0, 16))
-                arcade.draw_circle_filled(x, y, 4, (192, 64, 0), 18)
-            else:
-                self.draw_circle_filled(e[0], self.waypoints.radius, (0,0,0, 16))
-                arcade.draw_circle_filled(x, y, 4, (0,60,90), 18)
+        self.shapes.draw()
 
 
 class MapTileLayer(MapLayer):

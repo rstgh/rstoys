@@ -35,21 +35,17 @@ class TrackingBoat(Boat):
 
         super().__init__(position, heading, speed)
 
-        self.update_interval = Interval(0.3)
-
-        self.trail = []
+        self.update_interval = Interval(0.2)
         self.tracker = WayPointsBearingTracker(path, 2)
+        self.trail = None
 
 
     def render(self, et, dt):
 
-        # draw trailing dots
-        for p in self.trail:
-            x, y = self.map.project(p)
-            arcade.draw_point(x, y, (255,0,0), 6)
-
-        s = "%s | R=%.1f°" % (str(self.position), self.rudder)
-        arcade.draw_text(s, self.map.wh - 40, self.map.hh, (0,0,0,192), 18)
+        if self.trail is None:
+            self.trail = arcade.ShapeElementList()
+        else:
+            self.trail.draw()
 
         super().render(et, dt)
 
@@ -61,9 +57,8 @@ class TrackingBoat(Boat):
     def control(self):
 
         # append a trailing dot
-        self.trail.append(self.position.copy())
-        while len(self.trail) > 30:
-            del self.trail[0]
+        if self.trail is not None:
+            self.trail.append(arcade.create_ellipse_filled(*self.map.project(self.position), 2, 2, (128,0,0,64), 0, 6))
 
         # calculate bearing error and steer the rudder
         error = self.tracker.get_bearing_error(self.position)
@@ -71,9 +66,8 @@ class TrackingBoat(Boat):
             self.rudder = max(-30, min(30, error))
 
         if self.tracker.path.completed():
-            self.rudder = 0
-            self.speed = 0
-            print("Completed the path...")
+            print("Completed the path... Starting over...")
+            self.tracker.path.reset()
 
 
 swanage = LatLon(50.607915, -1.950507)
@@ -108,11 +102,11 @@ map.add_layer(boat)
 
 
 # five extra funny constant speed boats running in circles
-c = map.center.copy().move(70, 700) # c is 700 meters at 70 deg from map center
+c = map.center.copy().move(68, 800) # c is 800 meters at 68 deg from map center
 n = 5
 for i in range(0, n):
     a = 360 * i / n
-    b = Boat(c.copy().move(a, 150), a, 100)
+    b = Boat(c.copy().move(a, 150), a, 200)
     b.rudder = 20
     map.add_layer(b)
 
